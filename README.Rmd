@@ -1,0 +1,231 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(tidyverse, quietly = TRUE)
+library(sf, quietly = TRUE)
+```
+
+# london_liverpool_data
+
+This repository holds spatial dataframes related to a paper... Below is an explanation of their sources.
+
+## London
+
+This dataframe contains polygons for the wards and boroughs of London. It contains 625 unique rows.
+
+The data is available from the [London Datastore](https://data.london.gov.uk/) which was "created by the Greater London Authority (GLA) as a first step towards freeing London’s data".
+
+This particular file appears as a collection of shapefiles in zipped form [here](https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london as a zipped set of shapefiles called: statistical-gis-boundaries-london.zip).
+
+They have been uploaded here as one `.rds` file.
+
+```{r}
+
+london <- readRDS("data/london.rds") |> 
+  st_as_sf()
+
+head(london)
+
+```
+
+```{r}
+ggplot(london) + geom_sf() + theme_bw()
+```
+
+## River Thames
+
+The dataframe for the river Thames in the Greater London area was downloaded from OpenStreetMap via a query in the [overpass-turbo](https://overpass-turbo.eu) wizard.
+
+```{r}
+
+thames <- readRDS("data/thames.rds") |> 
+  st_as_sf() |> 
+  select(-(17:74))
+
+head(thames)
+
+```
+
+```{r}
+ggplot(thames) + 
+  geom_sf(colour="darkblue") + 
+  theme_bw()
+```
+
+## Liverpool
+
+The Liverpool dataset comes from the [Office of National Statistics](https://www.nomisweb.co.uk/home/census2001.asp) as presented by Francisco Rowe and Dani Arribas-Bel in their demonstration of techniques for hierarchical spatial regression. It is available in shapefile format at their [course repository](https://gdsl-ul.github.io/san/) for Spatial Modeling for Data Scientists, ENVS453, University of Liverpool.
+
+```{r}
+
+liverpool <- readRDS("data/liverpool.rds") |> 
+  st_as_sf()
+
+head(liverpool)
+
+```
+
+```{r}
+ggplot(liverpool) + 
+  geom_sf() + 
+  theme_bw()
+```
+
+## River Mersey
+
+The river Mersey dataset in the Liverpool region comes from the UK Government Environment Agency's [data services platform](https://environment.data.gov.uk/catchment-planning/WaterBody/GB531206908100)
+
+```{r}
+
+mersey <- readRDS("data/mersey.rds") |> 
+  st_as_sf()
+
+head(mersey)
+
+```
+
+```{r}
+ggplot(mersey) + 
+  geom_sf(fill="lightblue") + 
+  theme_bw()
+```
+
+## Thames River Crossings
+
+Information about the various crossing of the river Thames were scraped from [Wikipedia](https://en.wikipedia.org/wiki/List_of_crossings_of_the_River_Thames) using the following code. The dataset `crossing_roadped` contains crossings by road or which are available to pedestrians. This excludes things such as railway crossings, service or utility tunnels, gondola lifts, and flood barriers.
+
+```{r}
+### Scrape river-crossings data
+library(rvest, quietly = TRUE)
+library(httr, quietly = TRUE)
+library(polite, quietly = TRUE)
+library(janitor, quietly = TRUE)
+
+url <- "https://en.wikipedia.org/wiki/List_of_crossings_of_the_River_Thames"
+
+url_bow <- polite::bow(url)
+
+ind_html <-
+  polite::scrape(url_bow) %>%  # scrape web page
+  rvest::html_nodes("table.wikitable") %>% # pull out specific table
+  rvest::html_table(fill = TRUE) 
+
+# having scraped data, a bit of a messy procedure below to tidy it up into sf dataframe...
+
+names(ind_html) <- c(
+  "North Sea to London",
+  "East London",
+  "Central London",
+  "South West London",
+  "London to Windsor",
+  "Windsor to Reading",
+  "Reading to Oxford",
+  "Oxford to Cricklade",
+  "Cricklade to the source"
+)
+
+# only want the crossings within greater london (east, central and west)
+east <- 
+  ind_html[[2]] |>  
+  clean_names() |> 
+  select(1:3)
+names(east) <- c("crossing","type","coords")
+
+central <- 
+  ind_html[[3]] |>  
+  clean_names() |> 
+  select(1:3)
+names(central) <- c("crossing","type","coords")
+
+west <- 
+  ind_html[[4]] |>  
+  clean_names() |> 
+  select(1:3)
+names(west) <- c("crossing","type","coords")
+
+crossings <- rbind(east,central,west) |> 
+  data.frame() 
+
+# dont want crossings such as "Utility tunnel[10]","Flood barrier","Gondola lift, transport route","Utility tunnel", "Ferry route"
+# filter by road or pedestrian crossings
+roadped <- which(str_detect(crossings$type,"Pedestrian | pedestrian | road | Road | Bridge | footbridge"))
+
+crossings_roadped <- crossings[roadped,]
+
+# more messing around to change from awkward wikipedia degree/minute/second structure...
+
+# Extract content up to and including the letter "W" or "E"
+crossings_roadped$coords <- sub("(.*W|E.*)\\b.*", "\\1", crossings_roadped$coords)
+
+# Function to extract degrees, minutes, and seconds
+extract_coords <- function(coord) {
+  # Split the coordinates by space
+  parts <- unlist(strsplit(coord, " "))
+  
+  # Extract degrees, minutes, and seconds for latitude
+  lat_degrees <- as.numeric(gsub("[^0-9.-]", "", substr(parts[1], 1, regexpr("°", parts[1])-1)))
+  lat_minutes <- as.numeric(gsub("[^0-9.-]", "", substr(parts[1], regexpr("°", parts[1])+1, regexpr("′", parts[1])-1)))
+  lat_seconds <- as.numeric(gsub("[^0-9.-]", "", substr(parts[1], regexpr("′", parts[1])+1, regexpr("″", parts[1])-1)))
+  
+  # Extract degrees, minutes, and seconds for longitude
+  lon_degrees <- as.numeric(gsub("[^0-9.-]", "", substr(parts[2], 1, regexpr("°", parts[2])-1)))
+  lon_minutes <- as.numeric(gsub("[^0-9.-]", "", substr(parts[2], regexpr("°", parts[2])+1, regexpr("′", parts[2])-1)))
+  lon_seconds <- as.numeric(gsub("[^0-9.-]", "", substr(parts[2], regexpr("′", parts[2])+1, regexpr("″", parts[2])-1)))
+  
+  return(c(lat_degrees, lat_minutes, lat_seconds, lon_degrees, lon_minutes, lon_seconds))
+}
+
+# Apply function to coords column
+coords_split <- t(sapply(crossings_roadped$coords, extract_coords))
+
+# Convert to data frame
+coords_df <- as.data.frame(coords_split)
+
+# Rename columns
+names(coords_df) <- c("lat_degrees", "lat_minutes", "lat_seconds", "lon_degrees", "lon_minutes", "lon_seconds")
+
+coords_df$latitude <- coords_df$lat_degrees + (coords_df$lat_minutes/60) + (coords_df$lat_seconds/3600)
+coords_df$longitude <- coords_df$lon_degrees + (coords_df$lon_minutes/60) + (coords_df$lon_seconds/3600)
+
+crossings_roadped$latitude <- coords_df$latitude
+crossings_roadped$longitude <- coords_df$longitude
+
+# multiply those west of Greenwich meridian by -1
+crossings_roadped$longitude[which(!str_detect(crossings_roadped$coords, "E$"))] <- crossings_roadped$longitude[which(!str_detect(crossings_roadped$coords, "E$"))] * -1
+
+# nudge Greenwich tunnel location to put it exactly on river
+crossings_roadped$latitude[crossings_roadped$crossing == "Greenwich foot tunnel"] <- 51.485
+crossings_roadped$longitude[crossings_roadped$crossing == "Greenwich foot tunnel"] <- -0.01
+
+# nudge Woolwich tunnel location to put it exactly on river
+crossings_roadped$latitude[crossings_roadped$crossing == "Woolwich foot tunnel"] <- 51.497
+
+# finally, sf dataframe with same crs as thames and london...
+crossings_roadped <- crossings_roadped |> st_as_sf(coords = c("longitude","latitude"), crs=4326)
+
+```
+
+```{r}
+ggplot() + 
+  geom_sf(data=thames, colour="darkblue") + 
+  geom_sf(data=crossings_roadped, shape=7, size=5) + 
+  theme_bw()
+```
+
+
+
+
+
+
+
+
+
