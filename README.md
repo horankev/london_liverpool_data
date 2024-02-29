@@ -170,6 +170,22 @@ ggplot(liverpool) +
 
 ![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
+Some slight modifications were made to the original file such as making
+the administrative codes into factors, scaling the limiting long-term
+illness (LLTI) variable, and giving unemployment an unabbreviated name.
+
+``` r
+ liverpool <- downloaded_file |>
+  st_make_valid() |>
+  st_transform(4326) |>
+  mutate(
+    oa_cd = factor(oa_cd),
+    lsoa_cd = factor(lsoa_cd),
+    msoa_cd = factor(msoa_cd),
+    lt_illness = as.vector(scale(lt_ill))) |>
+  rename(unemployment = unemp)
+```
+
 ## River Mersey
 
 The river Mersey dataset in the Liverpool region comes from the UK
@@ -197,7 +213,7 @@ ggplot(mersey) +
   theme_bw()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ## Thames River Crossings
 
@@ -336,4 +352,4 @@ ggplot() +
   theme_bw()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
