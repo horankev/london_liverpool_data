@@ -24,7 +24,7 @@ This dataframe contains polygons for the wards and boroughs of London. It contai
 
 The data is available from the [London Datastore](https://data.london.gov.uk/) which was "created by the Greater London Authority (GLA) as a first step towards freeing London’s data".
 
-This particular file appears as a collection of shapefiles in zipped form [here](https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london as a zipped set of shapefiles called: statistical-gis-boundaries-london.zip).
+This particular file appears as a collection of shapefiles in zipped form [here](https://data.london.gov.uk/dataset/statistical-gis-boundary-files-london%20as%20a%20zipped%20set%20of%20shapefiles%20called:%20statistical-gis-boundaries-london.zip).
 
 They have been uploaded here as one `.rds` file.
 
@@ -64,6 +64,33 @@ ggplot(thames) +
 ## Liverpool
 
 The Liverpool dataset comes from the [Office of National Statistics](https://www.nomisweb.co.uk/home/census2001.asp) as presented by Francisco Rowe and Dani Arribas-Bel in their demonstration of techniques for hierarchical spatial regression. It is available in shapefile format at their [course repository](https://gdsl-ul.github.io/san/) for Spatial Modeling for Data Scientists, ENVS453, University of Liverpool.
+
+The authors describe its contents as follows:
+
+| row name | description                                                                       |
+|------------|------------------------------------------------------------|
+| oa_cd    | Output Area Code                                                                  |
+| lsoa_cd  | Lower Super Output Area Code                                                      |
+| msoa_cd  | Middle Super Output Area Code                                                     |
+| lad_cd   | Local Authority District Code                                                     |
+| ward_nm  | Ward Name                                                                         |
+| dstrt_nm | District Name                                                                     |
+| cnty_nm  | County Name                                                                       |
+| cntry_nm | Country Name                                                                      |
+| pop      | Population                                                                        |
+| age_60   | Proportion of resident population aged 60+                                        |
+| unemp    | Unemployment rate                                                                 |
+| lat      | Latitude                                                                          |
+| long     | Longitude                                                                         |
+| males    | Percentage of male resident population                                            |
+| lt_ill   | Percentage of population suffering from a long-term illness condition             |
+| Bhealth  | Percentage of resident population reporting bad health                            |
+| VBhealth | Percentage of resident population reporting very bad health                       |
+| no_qual  | Percentage of resident population with no educational qualification               |
+| manprof  | Percentage of resident population in high managerial and professional occupations |
+| geometry | Geometry                                                                          |
+
+: Source: 2011 UK Census, ONS: http://infuse.mimas.ac.uk/
 
 ```{r}
 
@@ -234,12 +261,3 @@ ggplot() +
   geom_sf(data=crossings_roadped, shape=7, size=5) + 
   theme_bw()
 ```
-
-
-
-
-
-
-
-
-

@@ -121,6 +121,33 @@ shapefile format at their [course
 repository](https://gdsl-ul.github.io/san/) for Spatial Modeling for
 Data Scientists, ENVS453, University of Liverpool.
 
+The authors describe its contents as follows:
+
+| row name | description                                                                       |
+|----------|-----------------------------------------------------------------------------------|
+| oa_cd    | Output Area Code                                                                  |
+| lsoa_cd  | Lower Super Output Area Code                                                      |
+| msoa_cd  | Middle Super Output Area Code                                                     |
+| lad_cd   | Local Authority District Code                                                     |
+| ward_nm  | Ward Name                                                                         |
+| dstrt_nm | District Name                                                                     |
+| cnty_nm  | County Name                                                                       |
+| cntry_nm | Country Name                                                                      |
+| pop      | Population                                                                        |
+| age_60   | Proportion of resident population aged 60+                                        |
+| unemp    | Unemployment rate                                                                 |
+| lat      | Latitude                                                                          |
+| long     | Longitude                                                                         |
+| males    | Percentage of male resident population                                            |
+| lt_ill   | Percentage of population suffering from a long-term illness condition             |
+| Bhealth  | Percentage of resident population reporting bad health                            |
+| VBhealth | Percentage of resident population reporting very bad health                       |
+| no_qual  | Percentage of resident population with no educational qualification               |
+| manprof  | Percentage of resident population in high managerial and professional occupations |
+| geometry | Geometry                                                                          |
+
+Source: 2011 UK Census, ONS: <http://infuse.mimas.ac.uk/>
+
 ``` r
 
 liverpool <- readRDS("data/liverpool.rds") |> 
