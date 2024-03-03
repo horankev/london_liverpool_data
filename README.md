@@ -188,8 +188,9 @@ illness (LLTI) variable, and giving unemployment an unabbreviated name.
 
 ## River Mersey
 
-The river Mersey dataset in the Liverpool region comes from the UK
-Government Environment Agency’s [data services
+The river Mersey dataset shows the mouth of the river in the Liverpool
+region and comes from the UK Government Environment Agency’s [data
+services
 platform](https://environment.data.gov.uk/catchment-planning/WaterBody/GB531206908100)
 
 ``` r
